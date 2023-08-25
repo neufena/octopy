@@ -57,6 +57,23 @@ def handle_midi(note):
 
     return False # Passthrough note
 
+def handle_key(key):
+    if key == "h" and settings.get("holdfile") != "" and settings.get("holdfile") != False:
+        manager.stop()
+        if settings.get_verbose():
+            print("File Selected: {}\n".format(settings.get("holdfile")))
+        manager.load(settings.get("holdfile"))
+        manager.start()
+        return True
+    if key == "t" and settings.get("testfile") != "" and settings.get("testfile") != False:
+        manager.stop()
+        if settings.get_verbose():
+            print("File Selected: {}\n".format(settings.get("testfile")))
+        manager.load(settings.get("testfile"))
+        manager.start()
+        return True
+    return False
+
 def led_setup(pin=False):
     if pin == False:
         pin = settings.get_statusled()
@@ -159,7 +176,7 @@ if __name__ == '__main__':
     # Wait for keyboard interrupt
     if settings.get_verbose():
         if settings.get_keyboardcontrol():
-            print("Entering main loop. Press 1-9 to play file. Press 0 to stop. Press Q or Control-C to exit.\n")
+            print("Entering main loop.\nPress 1-9 to play file. Press 0 to stop.\nPress H for holding. Press T for test.\nPress Q or Control-C to exit. \n")
         else:
             print("Entering main loop. Press Control-C to exit.\n")
     try:
@@ -169,6 +186,8 @@ if __name__ == '__main__':
                 ch = getch()
                 if ch.isnumeric():
                     handle_midi(int(ch))
+                elif ch == "h" or ch == "t":
+                    handle_key(ch)
                 elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
                     break
             else:

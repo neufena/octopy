@@ -101,6 +101,8 @@ class OctoFiles:
     def __locate_files(self):
         for (dirpath, dirnames, filenames) in os.walk(self.path):
             for filename in sorted(filenames):
+                if filename in self.settings.get_specialfiles():
+                    continue
                 self.__add_file(os.path.join(dirpath, filename))
             break
 
