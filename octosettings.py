@@ -97,6 +97,9 @@ class OctoSettings:
     def set_midisong(self, value):
         self.data['midisong'] = value
 
+    def get_specialfiles(self):
+        return [self.data['holdingfile'],self.data['testfile']]
+
     def parse_config(self, path):
         data = {}
         if not os.path.exists(path):
@@ -152,5 +155,13 @@ class OctoSettings:
                 data['midiclock'] = config['Midi'].getboolean('ClockOut')
             if 'SongOut' in config['Midi']:
                 data['midisong'] = config['Midi'].getboolean('SongOut')
+
+        if 'Files' in config:
+            if 'Stop' in config['Files']:
+                data['stopfile'] = config['Files']['Stop']
+            if 'Holding' in config['Files']:
+                data['holdingfile'] = config['Files']['Holding']
+            if 'Test' in config['Files']:
+                data['testfile'] = config['Files']['Test']
 
         return data
