@@ -62,13 +62,11 @@ def handle_key(key):
     if key == "h":
         if settings.get_verbose():
             print("Holding")
-        manager.stop()
         midi.send_note(11, 99)
         return True
     if key == "s":
         if settings.get_verbose():
             print("Smoke")
-        manager.stop()
         midi.send_note(2, 50)
         return True
     return False
