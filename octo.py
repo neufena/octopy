@@ -53,9 +53,25 @@ def handle_midi(note):
 
     elif note == 0:
         manager.stop()
+        midi.panic()
         return True # Note processed
 
     return False # Passthrough note
+
+def handle_key(key):
+    if key == "h":
+        if settings.get_verbose():
+            print("Holding")
+        manager.stop()
+        midi.send_note(11, 99)
+        return True
+    if key == "s":
+        if settings.get_verbose():
+            print("Smoke")
+        manager.stop()
+        midi.send_note(2, 50)
+        return True
+    return False
 
 def led_setup(pin=False):
     if pin == False:
@@ -159,7 +175,7 @@ if __name__ == '__main__':
     # Wait for keyboard interrupt
     if settings.get_verbose():
         if settings.get_keyboardcontrol():
-            print("Entering main loop. Press 1-9 to play file. Press 0 to stop. Press Q or Control-C to exit.\n")
+            print("Entering main loop.\nPress 1-9 to play file. Press 0 to stop.\nPress H for holding. Press S for smoke.\nPress Q or Control-C to exit. \n")
         else:
             print("Entering main loop. Press Control-C to exit.\n")
     try:
@@ -171,6 +187,8 @@ if __name__ == '__main__':
                     handle_midi(int(ch))
                 elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
                     break
+                else:
+                    handle_key(ch)
             else:
                 time.sleep(1)
     except KeyboardInterrupt:
