@@ -4,6 +4,16 @@ Multi-channel midi-capable audio/midi player on the Raspberry Pi platform using 
 
 _By [D. Cooper Dalrymple](https://dcdalrymple.com/), 2021_
 
+## Forked version for use with [HOONkbox Vision](https://github.com/neufena/hoonkboxvision)
+
+Changes:
+
+* Forked before video support added
+* Midi panic sends "All Off"
+* Midi panic always sends on stop, even if no streams are playing
+* Key "h" sends "Play video 99 looped"
+* Key "s" sends "Smoke for 5s"
+
 ## What is this and what is it for?
 
 Octopy is intended to be used to play audio tracks synchronized with midi tracks when triggered by midi for the purpose of live music performances. This way, midi-controlled devices (drum machines, keyboards, etc) can be sequenced with a backing track and controlled by a simple and fitting midi device all within a small package, no laptops and fancy DAWs required.

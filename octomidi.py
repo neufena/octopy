@@ -195,6 +195,8 @@ class OctoMidi():
         return self.send_byte(SONG_STOP)
     def send_byte(self, value):
         return self.send_message([value & 0xff])
+    def send_note(self, note, velocity):
+        self.send_message([rtmidi.midiconstants.NOTE_ON, note, velocity])
     def send_message(self, data, block = False):
         if not isinstance(data, bytes):
             data = bytes(data)
@@ -209,11 +211,7 @@ class OctoMidi():
         return True
 
     def panic(self):
-        for channel in range(16):
-            status = rtmidi.midiconstants.CONTROL_CHANGE | (channel & 0x0f)
-            self.send_message([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
-            self.send_message([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
-            #time.sleep(self.settings.get_threaddelay())
+        self.send_note(1, 0)
 
     def stop(self):
         self.panic()
