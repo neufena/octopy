@@ -214,7 +214,6 @@ class OctoMidi():
         self.send_note(1, 0)
 
     def stop(self):
-        self.panic()
         self.midifilepath = False
         self.midifile = False
         self.midimsgs = False
