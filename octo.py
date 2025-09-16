@@ -22,6 +22,7 @@ try:
     import wave
     import time
     import rtmidi
+    import csv
     from rtmidi.midiutil import open_midiinput
     from rtmidi.midiutil import open_midioutput
     from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE)
@@ -36,6 +37,7 @@ from octofiles import OctoUsb
 from octomidi import OctoMidi
 from octoaudio import OctoAudio
 from octomanager import OctoManager
+from octokeymap import OctoKeyMap
 
 from getch import _Getch
 
@@ -155,6 +157,9 @@ if __name__ == '__main__':
     # Preload Files
     if settings.get_preloadmedia():
         files.loadfiles()
+    
+    # Setup Keymap
+    keymap = OctoKeyMap(settings, files)
 
     # Initialize Audio
     audio = OctoAudio(settings)
@@ -181,6 +186,9 @@ if __name__ == '__main__':
         while True:
             if settings.get_keyboardcontrol():
                 ch = getch()
+                mappedCh = keymap.getFileIndex(ch)
+                if mappedCh != None:
+                    ch = str(mappedCh)
                 if ch.isnumeric():
                     handle_midi(int(ch))
                 elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z

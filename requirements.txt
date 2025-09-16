@@ -1,0 +1,4 @@
+pyalsaaudio 
+python-rtmidi 
+pyserial 
+mido
