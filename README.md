@@ -13,6 +13,7 @@ Changes:
 * Midi panic always sends on stop, even if no streams are playing
 * Key "h" sends "Play video 99 looped"
 * Key "s" sends "Smoke for 5s"
+* A keymap.csv file in media directory allows mapping keyboard keys to files
 
 ## What is this and what is it for?
 
