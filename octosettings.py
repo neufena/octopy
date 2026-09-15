@@ -97,6 +97,15 @@ class OctoSettings:
     def set_midisong(self, value):
         self.data['midisong'] = value
 
+    def get_midipanic_alloff(self):
+        return self.data['midipanic_alloff']
+    def set_midipanic_alloff(self, value):
+        self.data['midipanic_alloff'] = value
+    def get_keymapfile(self):
+        return self.data['keymapfile']
+    def set_keymapfile(self, value):
+        self.data['keymapfile'] = value
+
     def get_videoenabled(self):
         return self.data['videoenabled']
     def set_videoenabled(self, value):
@@ -169,6 +178,10 @@ class OctoSettings:
                 data['midiclock'] = config['Midi'].getboolean('ClockOut')
             if 'SongOut' in config['Midi']:
                 data['midisong'] = config['Midi'].getboolean('SongOut')
+            if 'PanicAllOff' in config['Midi']:
+                data['midipanic_alloff'] = config['Midi'].getboolean('PanicAllOff')
+            if 'KeymapFile' in config['Midi']:
+                data['keymapfile'] = config['Midi']['KeymapFile']
 
         if 'Video' in config:
             if 'Enabled' in config['Video']:

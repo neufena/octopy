@@ -5,6 +5,7 @@ import threading
 import serial
 
 import rtmidi
+import rtmidi._rtmidi as _rtmidi
 from rtmidi.midiutil import open_midiinput
 from rtmidi.midiutil import open_midioutput
 from rtmidi.midiconstants import (CHANNEL_PRESSURE, CONTROLLER_CHANGE, NOTE_OFF, NOTE_ON, PITCH_BEND, POLY_PRESSURE, PROGRAM_CHANGE, TIMING_CLOCK, SONG_START, SONG_STOP)
@@ -104,7 +105,7 @@ class OctoMidi():
                 if self.settings.get_verbose():
                     print("Could not open desired midi input port.")
                     print(repr(e))
-                self.midiin = rtmidi.MidiIn().open_virtual_port("Octopy Virtual Input")
+                self.midiin.open_virtual_port("Octopy Virtual Input")
                 self.in_port = "Octopy Virtual Input"
         if self.settings.get_verbose():
             print("Selected Midi Input Device: {}\n".format(self.in_port))
@@ -219,6 +220,9 @@ class OctoMidi():
             status = rtmidi.midiconstants.CONTROL_CHANGE | (channel & 0x0f)
             self.send_message([status, rtmidi.midiconstants.ALL_SOUND_OFF, 0])
             self.send_message([status, rtmidi.midiconstants.RESET_ALL_CONTROLLERS, 0])
+            # Send CC 123 (All Notes Off) if panic_alloff setting is enabled
+            if self.settings.get_midipanic_alloff():
+                self.send_message([status, rtmidi.midiconstants.ALL_NOTES_OFF, 0])
             #time.sleep(self.settings.get_threaddelay())
 
     def stop(self):

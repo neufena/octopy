@@ -33,10 +33,12 @@ except ImportError as err:
 from octosettings import OctoSettings
 from octofiles import OctoFiles
 from octofiles import OctoUsb
+from octofiles import OctoKeymap
 from octomidi import OctoMidi
 from octoaudio import OctoAudio
 from octovideo import OctoVideo
 from octomanager import OctoManager
+from nullmidi import NullMidi
 
 from getch import _Getch
 
@@ -125,6 +127,9 @@ if __name__ == '__main__':
     parser.add_argument('--midiclock', action='store_true', default=settings.get('midiclock'), help='Output midi clock messages. Is set to selected song midi file bpm.')
     parser.add_argument('--midisong', action='store_true', default=settings.get('midisong'), help='Output song start and stop midi messages.')
 
+    parser.add_argument('--midipanic_alloff', action='store_true', default=settings.get('midipanic_alloff'), help='Send MIDI All Off (CC 120) on panic/stop.')
+    parser.add_argument('--keymapfile', type=str, default=settings.get('keymapfile'), metavar='Keymap CSV File', help='Path to CSV file mapping keyboard keys to files.')
+
     parser.add_argument('--videoenabled', action='store_true', default=settings.get('videoenabled'), help='Enable video output. Requires pygame.')
     parser.add_argument('--videobgcolor', type=str, default=settings.get('videobgcolor'), metavar='Video Background Color', help='Use hexadecimal encoded rgb color value (ie: #000000).')
     parser.add_argument('--videobgimage', type=str, default=settings.get('videobgimage'), metavar='Video Background Image', help='Path to image to use as video background. Supports PNG, JPG, GIF, and BMP formats.')
@@ -161,6 +166,9 @@ if __name__ == '__main__':
     if settings.get_verbose():
         files.print()
 
+    # Initialize keymap with file list
+    keymap = OctoKeymap(settings, files)
+
     # Preload Files
     if settings.get_preloadmedia():
         files.loadfiles()
@@ -169,9 +177,15 @@ if __name__ == '__main__':
     audio = OctoAudio(settings)
 
     # Initialize Midi
-    midi = OctoMidi(settings)
-    midi.set_callback(handle_midi)
-    midi.open()
+    # Check if null MIDI device requested (for testing without ALSA)
+    if settings.get_midiindevice() == 'null' and settings.get_midioutdevice() == 'null':
+        midi = NullMidi()
+        if settings.get_verbose():
+            print("Using null MIDI device (no actual MIDI I/O).\n")
+    else:
+        midi = OctoMidi(settings)
+        midi.set_callback(handle_midi)
+        midi.open()
 
     # Initialize Video
     video = OctoVideo(settings)
@@ -200,9 +214,18 @@ if __name__ == '__main__':
                 if settings.get_keyboardcontrol():
                     pygame_break = False
                     for event in pygame.event.get():
-                        if event.type == pygame.KEYDOWN and event.key in range(pygame.K_0, pygame.K_9+1) and chr(event.key).isnumeric():
-                            handle_midi(int(chr(event.key)))
-                        elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key in [pygame.K_q, pygame.K_ESCAPE]) or (event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL):
+                        if event.type == pygame.KEYDOWN:
+                            key_char = chr(event.key) if event.key < 128 else ''
+                            # Check keymap first, then fallback to numeric keys
+                            file_index = keymap.get_file_index(key_char)
+                            if file_index is not None:
+                                handle_midi(file_index)
+                            elif key_char.isnumeric():
+                                handle_midi(int(key_char))
+                            elif event.key in [pygame.K_q, pygame.K_ESCAPE] or (event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL):
+                                pygame_break = True
+                                break
+                        elif event.type == pygame.QUIT:
                             pygame_break = True
                             break
                     if pygame_break:
@@ -213,7 +236,11 @@ if __name__ == '__main__':
             # Console focus
             elif settings.get_keyboardcontrol():
                 ch = getch()
-                if ch.isnumeric():
+                # Check keymap first, then fallback to numeric keys
+                file_index = keymap.get_file_index(ch)
+                if file_index is not None:
+                    handle_midi(file_index)
+                elif ch.isnumeric():
                     handle_midi(int(ch))
                 elif ch == "q" or ord(ch) in [3,26]: # 3=Ctrl+C, 26=Ctrl+Z
                     break

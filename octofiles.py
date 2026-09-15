@@ -220,3 +220,69 @@ class OctoUsb:
             return False
         else:
             return self.files
+
+class OctoKeymap:
+    def __init__(self, settings, files):
+        self.settings = settings
+        self.files = files
+        self.keymapfile = os.path.expanduser(settings.get_keymapfile())
+        self.keymap = {}
+        self.has_keymap = False
+        self.__load_keymap()
+
+    def __load_keymap(self):
+        if not self.keymapfile or not os.path.isfile(self.keymapfile):
+            if self.settings.get_verbose():
+                print("Keymap file not found: {}".format(self.keymapfile))
+            return False
+
+        try:
+            with open(self.keymapfile, 'r') as f:
+                # Skip header line
+                for index, line in enumerate(f):
+                    if index == 0:
+                        continue  # Skip header
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    parts = line.split(',')
+                    if len(parts) >= 2:
+                        key = parts[0].strip()
+                        filename = parts[1].strip()
+                        file_index = self.__find_file_index(filename)
+                        if file_index is not None:
+                            self.keymap[key] = file_index
+                            if self.settings.get_verbose():
+                                print("Keymap: {} => {} (file index {})".format(key, filename, file_index))
+                        else:
+                            if self.settings.get_verbose():
+                                print("Filename in keymap not found: {}".format(filename))
+            self.has_keymap = True
+            if self.settings.get_verbose():
+                print("Loaded keymap from {}: {} keys mapped".format(self.keymapfile, len(self.keymap)))
+            return True
+        except Exception as e:
+            if self.settings.get_verbose():
+                print("Error loading keymap file: {}".format(repr(e)))
+            return False
+
+    def __find_file_index(self, filename):
+        if not self.files.getfiles():
+            return None
+        for index, file in enumerate(self.files.getfiles()):
+            if file.name == filename:
+                return index + 1  # MIDI notes start at 1
+        return None
+
+    def get_file_index(self, key):
+        if not self.has_keymap:
+            return None
+        if key in self.keymap:
+            return self.keymap[key]
+        return None
+
+    def has_key(self, key):
+        return self.has_keymap and key in self.keymap
+
+    def get_all_keys(self):
+        return list(self.keymap.keys())

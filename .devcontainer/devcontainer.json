@@ -1,0 +1,23 @@
+{
+    "name": "Octopy Development",
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.12"
+        },
+        "ghcr.io/devcontainers/features/node:1": {}
+    },
+    "postCreateCommand": "bash -c 'sudo rm -rf /var/lib/apt/lists/* && sudo mkdir -p /var/lib/apt/lists/partial && sudo apt-get update && sudo apt-get install -y libasound2-dev libjack-dev && pip3 install pygame python-rtmidi pyserial mido pyalsaaudio' && echo \"alias run='python3 octo.py --verbose'\" >> ~/.bash_aliases && echo \"if [ -f ~/.bash_aliases ]; then source ~/.bash_aliases; fi\" >> ~/.bashrc",
+    "mounts": [
+        "type=bind,source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ]
+        }
+    }
+}
